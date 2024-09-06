@@ -1,15 +1,15 @@
+from collections import deque
 from random import randint, shuffle
+from charMap import getMaps
 
 CHINASTART = 19968
 TEST_ADDR = "Backend\levels\chinese-words.txt"
 
 
-
-def readLevel(address):
+def readLevel(address, chmaps):
     wordMap = {} # index -> (chinese, pinyin, english)
-    charMap = {} # character -> id
-    choiceMap = {} # id -> character
-    charCount = 0
+    charMap, choiceMap = chmaps
+    charCount = len(charMap)
 
     print("opening file...")
     with open(address, 'r', encoding = 'utf-8') as file:
@@ -47,18 +47,22 @@ def readLevel(address):
         
         wordMap[index] = [chineseWord, pinyin, english]
 
-    return[wordMap, charMap, choiceMap, charCount]
+    return[wordMap, charMap, choiceMap]
 
 
 def playGame(times, misses, correct, level):
 
-    wordMap, charMap, choiceMap, charCount = level
+    wordMap, charMap, choiceMap = level
+    charCount = len(charMap)
     if times == 0:
+        print("Summary:")
+        print("Missed: ", misses)
+        print("Correct: ", correct)
         return [misses, correct]
     
     num = randint(1, len(wordMap))
     correctAnswer, pinyin, english = wordMap[num]
-    correctQueue = []
+    correctQueue = deque()
     choices = [] # holds ids of choices
     for c in correctAnswer:
         correctQueue.append(charMap[c]) #ids of correct answer
@@ -87,14 +91,14 @@ def playGame(times, misses, correct, level):
         answer -= 1
         
         if correctQueue[0] == charMap[chars[answer]]: #id to id
-            reveal[currReveal] = choiceMap[correctQueue.pop(0)]
+            reveal[currReveal] = choiceMap[correctQueue.popleft()]
             currReveal += 1
             correct+= 1
             choices.pop(answer)
         else:
             print("wrong")
             misses += 1
-            if charMap[chars[answer]] in correctQueue:
+            if charMap[chars[answer]]in correctQueue:
                 continue
             choices.pop(answer)
             
@@ -102,8 +106,8 @@ def playGame(times, misses, correct, level):
         
     return playGame(times - 1, misses, correct, level)
 
-score = playGame(5, 0, 0, readLevel(TEST_ADDR))
-print("Summary:", score)
+playGame(5, 0, 0, readLevel(TEST_ADDR, getMaps()))
+
 
         
 
