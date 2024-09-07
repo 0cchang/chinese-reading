@@ -107,7 +107,7 @@ def getMaps():
     charMap = {} # character -> id
     choiceMap = {} # id -> character
     for i in range(len(CHARACTERS)):
-        if CHARACTERS[i] < CHINASTART:
+        if ord(CHARACTERS[i]) < CHINASTART:
             continue
         charMap[CHARACTERS[i]] = i+1
         choiceMap[i+1] = CHARACTERS[i]
