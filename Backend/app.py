@@ -172,7 +172,7 @@ def handle_click():
     charMap = {k.decode('utf-8'): v.decode('utf-8') for k, v in charMap.items()}
     choiceMap = {k.decode('utf-8'): v.decode('utf-8') for k, v in choiceMap.items()}
 
-    answer = request.form.get('index', '')
+    answer = request.form.get('char', '')
     logging.info(f"Received answer index: {answer}")
 
     if not answer or answer == " ":
@@ -192,19 +192,22 @@ def handle_click():
     correct_answer_id = charMap.get(dispChoices[answer], -1)
 
     if correctQueue and correctQueue[0] == correct_answer_id:
+        print("correct")
         reveal[currReveal] = choiceMap.get(correctQueue.pop(0), '')
         currReveal += 1
         choices.pop(answer)
+
     else:
         if correct_answer_id not in correctQueue:
             choices.pop(answer)
             incorrect_count += 1  # Increment incorrect answers count
-
+       
     if not correctQueue:
         times -= 1
         if times > 0:
             pinyin, english, reveal, currReveal, correctQueue, choices, dispChoices, level = \
-                playMCQ(pinyin, english, reveal, currReveal, correctQueue, choices, dispChoices, level)
+                playMCQ("", "", [], 0, [], [], [], level)
+        
         else:
             return jsonify({'game_over': True}), 200
 

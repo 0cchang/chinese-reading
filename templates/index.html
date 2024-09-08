@@ -7,41 +7,37 @@
     <script>
         $(document).ready(function() {
             // Attach event listeners to all choice buttons
-            $('.choice-button').on('click', async function(event) {
-                const choice = $(this).data('choice');
-
-                try {
-                    const response = await fetch('/handle_click', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: new URLSearchParams({ 'char': choice }),
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        
+            $('.choice-button').on('click', function(event) {
+                event.preventDefault(); // Prevent default form submission
+                
+                const choice = $(this).val(); // Get the value (index) of the button clicked
+    
+                // Submit the form using AJAX
+                $.ajax({
+                    url: '/handle_click',  // Your Flask route
+                    method: 'POST',
+                    data: { 'char': choice },  // Send the index as 'char'
+                    success: function(response) {
                         // Update the page with the new game state
-                        $('#pinyin').text('Pinyin: ' + data.pinyin.join(', '));
-                        $('#english').text('English: ' + data.english.join(', '));
-                        $('#reveal').text('Reveal: ' + data.reveal.join(' '));
-                        document.querySelector('#incorrect-count').textContent = data.incorrect_count;
-                        
+                        $('#pinyin').text('Pinyin: ' + response.pinyin.join(', '));
+                        $('#english').text('English: ' + response.english.join(', '));
+                        $('#reveal').text('Reveal: ' + response.reveal.join(' '));
+                        $('#incorrect-count').text(response.incorrect_count);
+    
                         // Check if the game is over
-                        if (data.game_over) {
+                        if (response.game_over) {
                             alert('Game over!');
-                            // Optionally, handle game over logic
+                            // Optionally handle game over logic here
                         }
-                    } else {
-                        console.error('Error:', await response.text());
+                    },
+                    error: function(error) {
+                        console.error('Error:', error);
                     }
-                } catch (error) {
-                    console.error('Request failed', error);
-                }
+                });
             });
         });
     </script>
+    
 </head>
 <body>
     <h1>MCQ Game</h1>
@@ -49,9 +45,11 @@
     <p id="english">English: {{ english }}</p>
     <p id="reveal">Reveal: {{ reveal|join(' ') }}</p>
     <p>Incorrect Answers: <span id="incorrect-count">{{ incorrect_count }}</span></p>
+
+    <!-- Updated form with hidden input -->
     <form id="game-form">
         {% for i in range(choices|length) %}
-            <button type="button" class="choice-button" data-choice="{{ loop.index }}">
+            <button type="button" class="choice-button" value="{{ loop.index0 }}">
                 {{ choiceMap[choices[i]] }}
             </button>
         {% endfor %}
