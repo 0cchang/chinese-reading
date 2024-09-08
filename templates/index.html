@@ -3,24 +3,12 @@
 <head>
     <meta charset="utf-8">
     <title>Chinese Reading App</title>
-</head>
-<body>
-    <h1>MCQ Game</h1>
-    <p>Pinyin: {{ pinyin }}</p>
-    <p>English: {{ english }}</p>
-    <p>Reveal: {{ reveal|join(' ') }}</p>
-    
-    <form id="game-form">
-        {% for i in range(choices|length) %}
-            <button type="button" class="choice-button" data-choice="{{ choices[i] }}">{{ choiceMap[choices[i]] }}</button>
-        {% endfor %}
-    </form>
-
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        
-        document.querySelectorAll('.choice-button').forEach(button => {
-            button.addEventListener('click', async (event) => {
-                const choice = button.getAttribute('data-choice');
+        $(document).ready(function() {
+            // Attach event listeners to all choice buttons
+            $('.choice-button').on('click', async function(event) {
+                const choice = $(this).data('choice');
 
                 try {
                     const response = await fetch('/handle_click', {
@@ -34,11 +22,13 @@
                     if (response.ok) {
                         const data = await response.json();
                         
-                        // Update the page with the new state here
-                        document.querySelector('p:nth-of-type(1)').textContent = 'Pinyin: ' + data.pinyin.join(', ');
-                        document.querySelector('p:nth-of-type(2)').textContent = 'English: ' + data.english.join(', ');
-                        document.querySelector('p:nth-of-type(3)').textContent = 'Reveal: ' + data.reveal.join(' ');
-
+                        // Update the page with the new game state
+                        $('#pinyin').text('Pinyin: ' + data.pinyin.join(', '));
+                        $('#english').text('English: ' + data.english.join(', '));
+                        $('#reveal').text('Reveal: ' + data.reveal.join(' '));
+                        document.querySelector('#incorrect-count').textContent = data.incorrect_count;
+                        
+                        // Check if the game is over
                         if (data.game_over) {
                             alert('Game over!');
                             // Optionally, handle game over logic
@@ -52,5 +42,19 @@
             });
         });
     </script>
+</head>
+<body>
+    <h1>MCQ Game</h1>
+    <p id="pinyin">Pinyin: {{ pinyin }}</p>
+    <p id="english">English: {{ english }}</p>
+    <p id="reveal">Reveal: {{ reveal|join(' ') }}</p>
+    <p>Incorrect Answers: <span id="incorrect-count">{{ incorrect_count }}</span></p>
+    <form id="game-form">
+        {% for i in range(choices|length) %}
+            <button type="button" class="choice-button" data-choice="{{ loop.index }}">
+                {{ choiceMap[choices[i]] }}
+            </button>
+        {% endfor %}
+    </form>
 </body>
 </html>

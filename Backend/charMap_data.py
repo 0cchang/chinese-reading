@@ -100,17 +100,5 @@ CHARACTERS = '''
 宓瓒陕腱誏忾鳌玷谗鬟栲篓旌幄翳棻荞靛铛唅轭壕褟羌撂犷讫洵锭髻齰胼桹砝涔仃黔昂涸婀搀梏蛔偆纂堀倬晟紘锒
 琱玹凊寤鲔囥珞蚜豋搵倨皕戡迤埼膑儆擤纨忻蠔熇囍毐瓯祚蜉骈怼褊镑熏俚恪觔鎯踫弁啣锟芍蕁擢盹听旸斡痍忸轾
 '''
+
 CHINASTART = 19968
-
-
-def getMaps():
-    charMap = {} # character -> id
-    choiceMap = {} # id -> character
-    for i in range(len(CHARACTERS)):
-        if ord(CHARACTERS[i]) < CHINASTART:
-            continue
-        charMap[CHARACTERS[i]] = i+1
-        choiceMap[i+1] = CHARACTERS[i]
-    
-    return [charMap, choiceMap]
-        
