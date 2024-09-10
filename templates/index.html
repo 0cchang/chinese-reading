@@ -1,58 +1,63 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8" />
     <title>Chinese Reading App</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
     <script>
-        $(document).ready(function() {
-            // Attach event listeners to all choice buttons
-            $('.choice-button').on('click', function(event) {
-                event.preventDefault(); // Prevent default form submission
-                
-                const choice = $(this).val(); // Get the value (index) of the button clicked
-    
-                // Submit the form using AJAX
-                $.ajax({
-                    url: '/handle_click',  // Your Flask route
-                    method: 'POST',
-                    data: { 'char': choice },  // Send the index as 'char'
-                    success: function(response) {
-                        // Update the page with the new game state
-                        $('#pinyin').text('Pinyin: ' + response.pinyin.join(', '));
-                        $('#english').text('English: ' + response.english.join(', '));
-                        $('#reveal').text('Reveal: ' + response.reveal.join(' '));
-                        $('#incorrect-count').text(response.incorrect_count);
-    
-                        // Check if the game is over
-                        if (response.game_over) {
-                            alert('Game over!');
-                            // Optionally handle game over logic here
-                        }
-                    },
-                    error: function(error) {
-                        console.error('Error:', error);
-                    }
-                });
-            });
+      $(document).ready(function () {
+        // Initialize Socket.IO
+        const socket = io();
+
+        // Function to emit a button click event
+        function emitButtonClick(value) {
+          socket.emit("button_click", { char: value });
+        }
+
+        // Attach event listeners to all choice buttons
+        $(".choice-button").on("click", function (event) {
+          event.preventDefault(); // Prevent default form submission
+
+          const choice = $(this).val(); // Get the value (index) of the button clicked
+
+          // Emit button click event
+          emitButtonClick(choice);
         });
+
+        // Listen for game state updates from the server
+        socket.on("game_state_update", function (data) {
+          $("#pinyin").text("Pinyin: " + (data.pinyin || []).join(", "));
+          $("#english").text("English: " + (data.english || []).join(", "));
+          $("#reveal").text("Reveal: " + (data.reveal || []).join(" "));
+          $("#incorrect-count").text(data.incorrect_count || 0);
+
+          if (data.game_over) {
+            alert("Game over!");
+          }
+          updateButtons(data.choices, data.choiceMap);
+          
+          console.log(data);
+        });
+      });
     </script>
-    
-</head>
-<body>
+  </head>
+  <body>
     <h1>MCQ Game</h1>
     <p id="pinyin">Pinyin: {{ pinyin }}</p>
     <p id="english">English: {{ english }}</p>
     <p id="reveal">Reveal: {{ reveal|join(' ') }}</p>
-    <p>Incorrect Answers: <span id="incorrect-count">{{ incorrect_count }}</span></p>
+    <p>
+      Incorrect Answers: <span id="incorrect-count">{{ incorrect_count }}</span>
+    </p>
 
     <!-- Updated form with hidden input -->
     <form id="game-form">
-        {% for i in range(choices|length) %}
-            <button type="button" class="choice-button" value="{{ loop.index0 }}">
-                {{ choiceMap[choices[i]] }}
-            </button>
-        {% endfor %}
+      {% for i in range(choices|length) %}
+      <button type="button" class="choice-button" value="{{ loop.index0 }}">
+        {{ choiceMap[choices[i]] }}
+      </button>
+      {% endfor %}
     </form>
-</body>
+  </body>
 </html>

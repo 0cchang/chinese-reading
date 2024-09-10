@@ -67,25 +67,25 @@ def loadLevelMCQ(address):
     return [wordMap, charMap, choiceMap]
 
 def playMCQ(pinyin, english, reveal, currReveal, correctQueue, choices, dispChoices, level):
-    if not choices or not correctQueue:
-        wordMap, charMap, choiceMap = level
-        charCount = len(charMap)
+    
+    wordMap, charMap, choiceMap = level
+    charCount = len(charMap)
 
-        num = str(randint(0, len(wordMap) - 1))
-        correctAnswer, pinyin, english = wordMap[num]
+    num = str(randint(0, len(wordMap) - 1))
+    correctAnswer, pinyin, english = wordMap[num]
 
-        choices = [charMap.get(c, -1) for c in correctAnswer]
-        correctQueue = choices.copy()
-        
-        # Add random choices
-        while len(choices) < 9:
-            newChoice = str(randint(1, charCount))
-            if newChoice not in choices:
-                choices.append(newChoice)
-        
-        reveal = ["_" for _ in range(len(correctAnswer))]
-        currReveal = 0
-        shuffle(choices)
-        dispChoices = [choiceMap.get(str(i), '') for i in choices]
-        print(correctQueue, choices)
+    choices = [charMap.get(c, -1) for c in correctAnswer]
+    correctQueue = choices.copy()
+    
+    # Add random choices
+    while len(choices) < 9:
+        newChoice = str(randint(1, charCount))
+        if newChoice not in choices:
+            choices.append(newChoice)
+    
+    reveal = ["_" for _ in range(len(correctAnswer))]
+    currReveal = 0
+    shuffle(choices)
+    dispChoices = [choiceMap.get(str(i), '') for i in choices]
+    print(correctQueue, choices)
     return pinyin, english, reveal, currReveal, correctQueue, choices, dispChoices, level
