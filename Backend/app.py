@@ -150,9 +150,24 @@ def check_game_state():
         'choices': choices,
         'correctQueue': correctQueue
     })
+@socketio.on('next')
+def handle_next_click():
+    pinyin, english, reveal, currReveal, correctQueue, choices, dispChoices, level = playMCQ(
+        pinyin, english, reveal, currReveal, correctQueue, choices, dispChoices, level)
 
-@socketio.on('button_click')
-def handle_button_click(data):
+    session.update({
+        'pinyin': pinyin,
+        'english': english,
+        'reveal': reveal,
+        'currReveal': currReveal,
+        'choices': choices,
+        'correctQueue': correctQueue,
+        'dispChoices': dispChoices
+    })
+    return redirect(url_for('index'))
+
+@socketio.on('choice_click')
+def handle_choice_click(data):
     print("Handle button click route was triggered")
     
     # Retrieve game state from session
@@ -219,15 +234,11 @@ def handle_button_click(data):
     correct_answer_id = charMap.get(dispChoices[answer], -1)
     if correctQueue and correctQueue[0] == correct_answer_id:
         reveal[currReveal] = choiceMap.get(correctQueue.pop(0), '')
-        currReveal += 1
-        choices.pop(answer)
+        currReveal += 1  
     else:
         if correct_answer_id not in correctQueue:
-            choices.pop(answer)
             incorrect_count += 1
     
-    dispChoices = [choiceMap.get(str(i), '') for i in choices]
-
     # Update session with new state
     session.update({
         'reveal': reveal,

@@ -12,17 +12,20 @@
 
         // Function to emit a button click event
         function emitButtonClick(value) {
-          socket.emit("button_click", { char: value });
+          socket.emit("choice_click", { char: value });
         }
 
         // Attach event listeners to all choice buttons
         $(".choice-button").on("click", function (event) {
           event.preventDefault(); // Prevent default form submission
-
+          
           const choice = $(this).val(); // Get the value (index) of the button clicked
 
           // Emit button click event
           emitButtonClick(choice);
+          
+          $(this).hide();
+
         });
 
         // Listen for game state updates from the server
@@ -32,11 +35,7 @@
           $("#reveal").text("Reveal: " + (data.reveal || []).join(" "));
           $("#incorrect-count").text(data.incorrect_count || 0);
 
-          if (data.game_over) {
-            alert("Game over!");
-          }
-          updateButtons(data.choices, data.choiceMap);
-          
+        
           console.log(data);
         });
       });
@@ -58,6 +57,12 @@
         {{ choiceMap[choices[i]] }}
       </button>
       {% endfor %}
+    </form>
+    <br><br>
+    <form id="next">
+        <button type ="button" class ="submit-button" value ="next">
+            next
+        </button>
     </form>
   </body>
 </html>
